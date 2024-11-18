@@ -2,12 +2,14 @@ package com.epam.xstack.gym.trainer.dto.request.training;
 
 import com.epam.xstack.gym.trainer.dto.request.Request;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredFiledException;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
+@Schema(description = "Template for create training requests")
 public class CreateTrainingRequest implements Request {
 
     public CreateTrainingRequest(String firstName, Boolean isActive, String lastName, LocalDate trainingDate, Integer trainingDuration, String username) {
@@ -23,11 +25,17 @@ public class CreateTrainingRequest implements Request {
 
     private static final Logger logger = LoggerFactory.getLogger(CreateTrainingRequest.class);
 
+    @Schema(description = "Username of the trainer", example = "Michael.Wilson")
     private String username;
+    @Schema(description = "First name of the trainer", example = "Michael")
     private String firstName;
+    @Schema(description = "Last name of the trainer", example = "Wilson")
     private String lastName;
+    @Schema(description = "Activity status of the trainer", example = "true")
     private Boolean isActive;
+    @Schema(description = "Expected date for the training", example = "2024-09-10")
     private LocalDate trainingDate;
+    @Schema(description = "Duration of the training in minutes", example = "30")
     private Integer trainingDuration;
 
     public String getFirstName() {
