@@ -9,10 +9,17 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
   h2:
     console:
       enabled: true
+  cloud:
+    discovery:
+      enabled: false
 
 server:
   port: 8081
+
+eureka:
+  client:
+    enabled: false

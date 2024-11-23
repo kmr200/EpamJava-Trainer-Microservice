@@ -121,7 +121,7 @@ public class TrainerService {
 
     private TrainerEntity getTrainer(String username) {
         logger.debug("Get trainer with username {}", username);
-        return trainerRepository.findById(username)
+        return trainerRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new TrainerByUsernameNotFound("Trainer with username " + username + " not found"));
     }
 

@@ -12,7 +12,7 @@ import java.util.Objects;
 @Schema(description = "Template for create training requests")
 public class CreateTrainingRequest implements Request {
 
-    public CreateTrainingRequest(String firstName, Boolean isActive, String lastName, LocalDate trainingDate, Integer trainingDuration, String username) {
+    public CreateTrainingRequest(String username, String firstName, String lastName, Boolean isActive, LocalDate trainingDate, Integer trainingDuration) {
         this.firstName = firstName;
         this.isActive = isActive;
         this.lastName = lastName;

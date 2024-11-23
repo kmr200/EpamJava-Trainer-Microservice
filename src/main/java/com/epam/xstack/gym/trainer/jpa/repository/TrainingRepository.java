@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface TrainingRepository extends JpaRepository<TrainingEntity, String> {
 
-    @Query("SELECT tr FROM TrainingEntity tr JOIN tr.trainer t WHERE t.username = :username ORDER BY function('YEAR', tr.trainingDate) DESC, function('MONTH', tr.trainingDate) DESC")
+    @Query("SELECT tr FROM TrainingEntity tr JOIN tr.trainer t WHERE LOWER(t.username) = LOWER(:username) ORDER BY function('YEAR', tr.trainingDate) DESC, function('MONTH', tr.trainingDate) DESC")
     List<TrainingEntity> findAllTrainingsByTrainerSortedByYearAndMonth(@Param("username") String username);
 
 }

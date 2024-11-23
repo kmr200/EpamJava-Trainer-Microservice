@@ -6,7 +6,16 @@ plugins {
 }
 
 group = 'com.epam.xstack.gym.trainer'
-version = '0.0.1-SNAPSHOT'
+version = '0.1'
+
+def jacocoExclusions = [
+        '**/TrainerWorkloadServiceApplication.class',
+        '**/jpa/**',
+        '**/exception/**',
+        '**/dto/**',
+        '**/config/docs/**',
+        '**/mapper/**'
+]
 
 java {
     toolchain {
@@ -41,6 +50,8 @@ dependencies {
     // Jakarta
     implementation 'jakarta.servlet:jakarta.servlet-api'
     implementation 'jakarta.annotation:jakarta.annotation-api'
+    // Jackson
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     // H2
     runtimeOnly 'com.h2database:h2'
     // Test
@@ -52,12 +63,40 @@ springBoot {
     mainClass = 'com.epam.xstack.gym.trainer.TrainerWorkloadServiceApplication'
 }
 
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect(({
+            fileTree(dir: it, exclude: jacocoExclusions)
+        } as Closure<Object>))))
+    }
+}
+
+jacocoTestCoverageVerification{
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect(({
+            fileTree(dir: it, exclude: jacocoExclusions)
+        } as Closure<Object>))))
+    }
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.8
+            }
+        }
+    }
+}
+
+
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
+check.dependsOn jacocoTestCoverageVerification
