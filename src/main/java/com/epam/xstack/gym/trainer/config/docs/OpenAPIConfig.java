@@ -11,25 +11,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(title = "Trainers trainings report service", version = "alpha"),
-        security = @SecurityRequirement(name = "BearerAuth")
+        info = @Info(title = "Trainers trainings report service", version = "alpha")
 )
 public class OpenAPIConfig {
 
-    private static final String SCHEME = "bearerAuth";
-
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .components(new Components()
-                        .addSecuritySchemes(SCHEME, new SecurityScheme()
-                                .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"))
-                        .addSecuritySchemes("basicAuth",
-                                new SecurityScheme().type(SecurityScheme.Type.HTTP)
-                                        .scheme("basic"))
-                );
+        return new OpenAPI();
     }
 
 }

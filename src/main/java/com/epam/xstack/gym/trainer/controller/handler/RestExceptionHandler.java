@@ -1,6 +1,7 @@
 package com.epam.xstack.gym.trainer.controller.handler;
 
 import com.epam.xstack.gym.trainer.dto.response.exception.ExceptionBodyTemplate;
+import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredFiledException;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     Logger logger = LoggerFactory.getLogger(RestExceptionHandler.class);
+
+    @ExceptionHandler(value = {EmptyRequiredField.class})
+    protected ResponseEntity<Object> handleEmptyRequiredField(EmptyRequiredField ex, HttpServletRequest request) {
+
+        logger.error("EmptyRequiredField Exception occurred: {}", ex.getMessage());
+
+        return new ResponseEntity<>(new ExceptionBodyTemplate(400, "Bad Request", ex.getMessage(), request.getRequestURI()), HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(value = {EmptyRequiredFiledException.class})
     protected ResponseEntity<Object> handleEmptyRequiredFiled(EmptyRequiredFiledException ex, HttpServletRequest request) {

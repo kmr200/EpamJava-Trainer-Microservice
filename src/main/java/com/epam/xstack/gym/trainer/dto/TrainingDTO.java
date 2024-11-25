@@ -1,5 +1,6 @@
 package com.epam.xstack.gym.trainer.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -7,12 +8,12 @@ public class TrainingDTO {
 
     private String trainingUUID;
     private TrainerDTO trainer;
-    private LocalDateTime trainingDate;
+    private LocalDate trainingDate;
     private Integer trainingDuration;
 
     public TrainingDTO() {}
 
-    public TrainingDTO(TrainerDTO trainer, LocalDateTime trainingDate, Integer trainingDuration, String trainingId) {
+    public TrainingDTO(TrainerDTO trainer, LocalDate trainingDate, Integer trainingDuration, String trainingId) {
         this.trainer = trainer;
         this.trainingDate = trainingDate;
         this.trainingDuration = trainingDuration;
@@ -28,11 +29,11 @@ public class TrainingDTO {
         return this;
     }
 
-    public LocalDateTime getTrainingDate() {
+    public LocalDate getTrainingDate() {
         return trainingDate;
     }
 
-    public TrainingDTO setTrainingDate(LocalDateTime trainingDate) {
+    public TrainingDTO setTrainingDate(LocalDate trainingDate) {
         this.trainingDate = trainingDate;
         return this;
     }

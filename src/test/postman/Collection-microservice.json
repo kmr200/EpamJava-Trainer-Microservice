@@ -1,0 +1,73 @@
+{
+	"info": {
+		"_postman_id": "d955e8de-a83d-46d2-9fff-a0f151c1c7db",
+		"name": "Gym Crm: Secondary Microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37227931",
+		"_collection_link": "https://gym-crm.postman.co/workspace/Gym-Crm-Workspace~84d7eb09-7fa5-4721-85b4-226bedd612c7/collection/37227931-d955e8de-a83d-46d2-9fff-a0f151c1c7db?action=share&source=collection_link&creator=37227931"
+	},
+	"item": [
+		{
+			"name": "Training",
+			"item": [
+				{
+					"name": "create training",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"Kamron.Shuhratjonov\",\n    \"firstName\": \"Kamron\",\n    \"lastName\": \"Shuhratjonov\",\n    \"trainingDate\": \"2024-11-01\",\n    \"trainingDuration\": \"30\",\n    \"active\": \"true\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/v1/trainer-workload/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"trainer-workload",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/v1/trainer-workload/Kamron.Shuhratjonov/trainings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"v1",
+								"trainer-workload",
+								"Kamron.Shuhratjonov",
+								"trainings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

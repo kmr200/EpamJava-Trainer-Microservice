@@ -1,22 +1,16 @@
 package com.epam.xstack.gym.trainer.service;
 
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.TrainingDTO;
+import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
-import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
 import com.epam.xstack.gym.trainer.mapper.TrainerMapper;
-import com.epam.xstack.gym.trainer.mapper.TrainingMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TrainerService {
@@ -27,15 +21,14 @@ public class TrainerService {
     private final TrainerRepository trainerRepository;
     private final TrainingRepository trainingRepository;
     private final TrainerMapper trainerMapper;
-    private final TrainingMapper trainingMapper;
 
-    public TrainerService(TrainerRepository trainerRepository, TrainingRepository trainingRepository, TrainerMapper trainerMapper, TrainingMapper trainingMapper) {
+    public TrainerService(TrainerRepository trainerRepository, TrainingRepository trainingRepository, TrainerMapper trainerMapper) {
         this.trainerRepository = trainerRepository;
         this.trainingRepository = trainingRepository;
         this.trainerMapper = trainerMapper;
-        this.trainingMapper = trainingMapper;
     }
 
+    @Transactional
     // Returns if trainer already exists or creates a new one
     public TrainerDTO getOrCreate(
             String username,
@@ -60,51 +53,36 @@ public class TrainerService {
         return trainerMapper.toDTO(trainer);
     }
 
-    public TrainingDTO addTraining (
-            String trainerUsername,
-            LocalDate trainingDate,
-            Integer trainingDuration
-    ) throws TrainerByUsernameNotFound {
-        logger.debug("Add training {}", trainerUsername);
-        TrainerEntity trainer;
-
-        try {
-            trainer = getTrainer(trainerUsername);
-        } catch (TrainerByUsernameNotFound e) {
-            logger.warn("Trainer with username {} does not exist", trainerUsername);
-            throw new TrainerByUsernameNotFound("Could not create training. Trainer with username " + trainerUsername + " not found.");
-        }
-
-        TrainingEntity training = new TrainingEntity(
-                trainingDate,
-                trainingDuration,
-                trainer
-        );
-        trainingRepository.save(training);
-
-        logger.debug("Added training: {}", training);
-        return trainingMapper.toDto(training);
-    }
-
     public TrainerDTO getTrainerByUsername(String username) {
         logger.debug("Get trainer by username {}", username);
         return trainerMapper.toDTO(getTrainer(username));
     }
 
-    public Map<Integer, Map<Integer, Integer>> getSortedTrainingsByTrainer(String trainerUsername) {
-        logger.debug("Get sorted trainings by username {}", trainerUsername);
-        List<TrainingEntity> trainings = trainingRepository.findAllTrainingsByTrainerSortedByYearAndMonth(trainerUsername);
-        return trainings.stream()
-                .collect(Collectors.groupingBy(
-                        //Group trainings by year
-                        training -> training.getTrainingDate().getYear(),
-                        Collectors.groupingBy(
-                                //Group trainings by month
-                                training -> training.getTrainingDate().getMonthValue(),
-                                //Calculate summary training duration
-                                Collectors.summingInt(TrainingEntity::getTrainingDuration)
-                        )
-                ));
+    @Transactional
+    public TrainerDTO updateTrainer(
+            String username,
+            String firstName,
+            String lastName,
+            Boolean isActive
+    ) {
+        logger.debug("Update trainer by username {}", username);
+        checkRequiredFields(username);
+
+        TrainerEntity trainer = getTrainer(username);
+
+        if ( firstName != null && !firstName.isEmpty() ) trainer.setFirstName(firstName);
+        if ( lastName != null && !lastName.isEmpty() ) trainer.setLastName(lastName);
+        if ( isActive != null && isActive.booleanValue() != trainer.getActive() ) {
+            //If trainer is inactive, delete training's associated with the trainer
+            if (!isActive) {
+                trainingRepository.deleteAllByTrainer(username);
+            }
+            trainer.setActive(isActive);
+        }
+
+        return trainerMapper.toDTO(
+                trainerRepository.save(trainer)
+        );
     }
 
     private TrainerEntity createTrainer(
@@ -123,6 +101,15 @@ public class TrainerService {
         logger.debug("Get trainer with username {}", username);
         return trainerRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new TrainerByUsernameNotFound("Trainer with username " + username + " not found"));
+    }
+
+    private void checkRequiredFields(Object... objects) {
+        for (Object object : objects) {
+            if (object == null) {
+                logger.error("One of the required fields is empty");
+                throw new EmptyRequiredField("Some of the required fields are empty");
+            }
+        }
     }
 
 }
