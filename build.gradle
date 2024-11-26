@@ -44,6 +44,9 @@ dependencies {
     // Mapstruct
     implementation 'org.mapstruct:mapstruct:1.6.0'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
+    // Lombok
+    implementation 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
     // Micrometer
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.micrometer:micrometer-registry-prometheus'

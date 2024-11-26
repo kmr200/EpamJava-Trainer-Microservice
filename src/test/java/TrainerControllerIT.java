@@ -1,6 +1,5 @@
 import com.epam.xstack.gym.trainer.TrainerWorkloadServiceApplication;
 import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
-import com.epam.xstack.gym.trainer.dto.request.training.CreateTrainingRequest;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;

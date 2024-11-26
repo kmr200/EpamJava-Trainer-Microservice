@@ -14,5 +14,18 @@ spring:
     console:
       enabled: true
 
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 server:
   port: 8081

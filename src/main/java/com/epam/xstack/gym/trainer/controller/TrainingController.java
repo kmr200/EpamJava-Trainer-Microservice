@@ -4,7 +4,6 @@ import com.epam.xstack.gym.trainer.controller.docs.TrainingControllerDocs;
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
 import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.dto.request.training.CreateTrainingRequest;
-import com.epam.xstack.gym.trainer.dto.response.GetTrainingsResponse;
 import com.epam.xstack.gym.trainer.service.TrainerService;
 import com.epam.xstack.gym.trainer.service.TrainingService;
 import org.slf4j.Logger;
@@ -12,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Controller
 @RequestMapping(value = "/api/v1/trainer-workload/training", produces = {"application/JSON"})

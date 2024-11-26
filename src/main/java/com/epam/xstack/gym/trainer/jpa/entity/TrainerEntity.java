@@ -1,15 +1,20 @@
 package com.epam.xstack.gym.trainer.jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "trainer")
+@NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class TrainerEntity {
-
-    public TrainerEntity() {}
 
     public TrainerEntity(String username, String firstName, String lastName, Boolean isActive) {
         this.firstName = firstName;
@@ -77,27 +82,5 @@ public class TrainerEntity {
     public TrainerEntity setTrainings(Set<TrainingEntity> trainings) {
         this.trainings = trainings;
         return this;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TrainerEntity that)) return false;
-        return Objects.equals(getUsername(), that.getUsername()) && Objects.equals(getFirstName(), that.getFirstName()) && Objects.equals(getLastName(), that.getLastName()) && Objects.equals(isActive, that.isActive);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getUsername(), getFirstName(), getLastName(), isActive);
-    }
-
-    @Override
-    public String toString() {
-        return "TrainerEntity{" +
-                "isActive=" + isActive +
-                ", username='" + username + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", firstName='" + firstName + '\'' +
-                '}';
     }
 }
