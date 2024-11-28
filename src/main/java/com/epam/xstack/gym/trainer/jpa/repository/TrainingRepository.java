@@ -20,4 +20,7 @@ public interface TrainingRepository extends JpaRepository<TrainingEntity, String
     @Query("DELETE FROM TrainingEntity tr WHERE LOWER(tr.trainer.username) = LOWER(:username)")
     void deleteAllByTrainer (@Param("username") String username);
 
+    @Query("SELECT tr FROM TrainingEntity tr WHERE LOWER(tr.trainer.username) = LOWER(:trainerUsername) AND tr.trainingDate = :trainingDate AND tr.trainingDuration = :duration")
+    List<TrainingEntity> findByTrainerAndTrainingDateAndTrainingDuration(String trainerUsername, LocalDate trainingDate, Integer duration);
+
 }

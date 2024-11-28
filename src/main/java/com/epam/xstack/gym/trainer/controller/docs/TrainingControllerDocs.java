@@ -1,6 +1,6 @@
 package com.epam.xstack.gym.trainer.controller.docs;
 
-import com.epam.xstack.gym.trainer.dto.request.training.CreateTrainingRequest;
+import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +15,6 @@ public interface TrainingControllerDocs {
                     responseCode = "200"
             )
     })
-    ResponseEntity<String> createTraining(@RequestBody CreateTrainingRequest request);
+    ResponseEntity<Object> manageTraining(@RequestBody ModifyTrainingRequest request);
 
 }

@@ -3,7 +3,8 @@ package com.epam.xstack.gym.trainer.controller;
 import com.epam.xstack.gym.trainer.controller.docs.TrainingControllerDocs;
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
 import com.epam.xstack.gym.trainer.dto.TrainingDTO;
-import com.epam.xstack.gym.trainer.dto.request.training.CreateTrainingRequest;
+import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
+import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.service.TrainerService;
 import com.epam.xstack.gym.trainer.service.TrainingService;
 import org.slf4j.Logger;
@@ -32,28 +33,51 @@ public class TrainingController implements TrainingControllerDocs {
 
     @PostMapping(value = "/")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> createTraining(@RequestBody CreateTrainingRequest request) {
-        logger.debug("Create training request: {}", request);
+    public ResponseEntity<Object> manageTraining(@RequestBody ModifyTrainingRequest request) {
+        logger.debug("Manage training request: {}", request);
 
-        request.checkRequiredFields();
+        // Create training
+        if (request.getActionType().equals(ActionType.CREATE)) {
+            // Check required fields for creating training
+            request.checkRequiredFields();
 
-        //Save the trainer if it does not exist
-        TrainerDTO trainer = trainerService.getOrCreate(
-                request.getUsername(),
-                request.getFirstName(),
-                request.getLastName(),
-                request.getActive()
-        );
-        logger.debug("Created/received trainer: {}", trainer);
+            logger.debug("Create training request: {}", request);
+            //Save the trainer if it does not exist
+            TrainerDTO trainer = trainerService.getOrCreate(
+                    request.getUsername(),
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getActive()
+            );
+            logger.debug("Created/received trainer: {}", trainer);
 
-        TrainingDTO training = trainingService.addTraining(
-                request.getUsername(),
-                request.getTrainingDate(),
-                request.getTrainingDuration()
-        );
-        logger.debug("Created training: {}", training);
+            TrainingDTO training = trainingService.addTraining(
+                    request.getUsername(),
+                    request.getTrainingDate(),
+                    request.getTrainingDuration()
+            );
+            logger.debug("Created training: {}", training);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else if (request.getActionType().equals(ActionType.DELETE)) {
+            // Delete training
+
+            request.deleteCheckRequiredFields();
+
+            logger.debug("Delete training request: {}", request);
+
+            TrainingDTO trainingDTO = trainingService.deleteTraining(
+                    request.getUsername(),
+                    request.getTrainingDate(),
+                    request.getTrainingDuration()
+            );
+
+            logger.debug("Deleted training: {}", trainingDTO);
+
+            return new ResponseEntity<>(trainingDTO, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>("actionType not found. Please use CREATE/DELETE for actionType", HttpStatus.BAD_REQUEST);
     }
 
 }

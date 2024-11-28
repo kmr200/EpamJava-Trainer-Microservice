@@ -2,6 +2,7 @@ package com.epam.xstack.gym.trainer.service;
 
 import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
+import com.epam.xstack.gym.trainer.exception.TrainingNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
@@ -71,6 +72,31 @@ public class TrainingService {
                                 Collectors.summingInt(TrainingEntity::getTrainingDuration)
                         )
                 ));
+    }
+
+    public TrainingDTO deleteTraining(
+            String trainerUsername,
+            LocalDate trainingDate,
+            Integer trainingDuration
+    ) {
+        TrainerEntity trainer = getTrainer(trainerUsername);
+
+        List<TrainingEntity> trainingList = trainingRepository.findByTrainerAndTrainingDateAndTrainingDuration(
+                trainerUsername,
+                trainingDate,
+                trainingDuration
+        );
+
+        if (trainingList.isEmpty()) {
+            throw new TrainingNotFound(
+                    "Training for trainer: " + trainerUsername + ", with the following date: "
+                            + trainingDate + " and duration: " + trainingDuration + " not found.");
+        }
+
+        TrainingEntity training = trainingList.get(0);
+        trainingRepository.delete(training);
+
+        return trainingMapper.toDto(training);
     }
 
     private TrainerEntity getTrainer(String username) {

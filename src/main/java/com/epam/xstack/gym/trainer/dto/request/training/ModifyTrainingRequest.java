@@ -9,23 +9,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Schema(description = "Template for create training requests")
 @NoArgsConstructor
 @Data
-public class CreateTrainingRequest implements Request {
+public class ModifyTrainingRequest implements Request {
 
-    public CreateTrainingRequest(String username, String firstName, String lastName, Boolean isActive, LocalDate trainingDate, Integer trainingDuration) {
+    public ModifyTrainingRequest(
+            String username,
+            String firstName,
+            String lastName,
+            Boolean isActive,
+            LocalDate trainingDate,
+            Integer trainingDuration,
+            ActionType actionType
+    ) {
         this.firstName = firstName;
         this.isActive = isActive;
         this.lastName = lastName;
         this.trainingDate = trainingDate;
         this.trainingDuration = trainingDuration;
         this.username = username;
+        this.actionType = actionType;
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(CreateTrainingRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(ModifyTrainingRequest.class);
 
     @Schema(description = "Username of the trainer", example = "Michael.Wilson")
     private String username;
@@ -39,14 +47,24 @@ public class CreateTrainingRequest implements Request {
     private LocalDate trainingDate;
     @Schema(description = "Duration of the training in minutes", example = "30")
     private Integer trainingDuration;
+    @Schema(description = "Action to be taken: CREATE/DELETE", examples = {"CREATE", "DELETE"})
+    private ActionType actionType;
 
     public Boolean getActive() {
         return isActive;
     }
 
-    public CreateTrainingRequest setActive(Boolean active) {
+    public ModifyTrainingRequest setActive(Boolean active) {
         isActive = active;
         return this;
+    }
+
+    public void deleteCheckRequiredFields() {
+        if (username == null || username.isEmpty() ||
+                actionType == null || trainingDate == null || trainingDuration == null) {
+            logger.warn("Required fields for deleting training are missing");
+            throw new EmptyRequiredFiledException("Required fields for deleting training are missing");
+        }
     }
 
     @Override
@@ -54,7 +72,8 @@ public class CreateTrainingRequest implements Request {
         if (username == null || username.isEmpty() ||
                 firstName == null || firstName.isEmpty() ||
                 lastName == null || lastName.isEmpty() ||
-                isActive == null || trainingDate == null || trainingDuration == null) {
+                isActive == null || trainingDate == null ||
+                trainingDuration == null || actionType == null) {
             logger.warn("Required fields are missing");
             throw new EmptyRequiredFiledException("Required fields are missing");
         }

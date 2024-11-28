@@ -1,5 +1,6 @@
 import com.epam.xstack.gym.trainer.TrainerWorkloadServiceApplication;
-import com.epam.xstack.gym.trainer.dto.request.training.CreateTrainingRequest;
+import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
+import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
@@ -48,13 +49,23 @@ class TrainingControllerIT {
     private final Integer trainingDuration = 30;
     private final String createTrainingUri = "/api/v1/trainer-workload/training/";
     private final String contentType = "application/json";
-    private final CreateTrainingRequest request = new CreateTrainingRequest(
+    private final ModifyTrainingRequest create = new ModifyTrainingRequest(
             trainerUsername,
             trainerFirstName,
             trainerLastName,
             true,
             trainingDate,
-            trainingDuration
+            trainingDuration,
+            ActionType.CREATE
+    );
+    private final ModifyTrainingRequest delete = new ModifyTrainingRequest(
+            trainerUsername,
+            trainerFirstName,
+            trainerLastName,
+            true,
+            trainingDate,
+            trainingDuration,
+            ActionType.DELETE
     );
 
     @Test
@@ -63,8 +74,8 @@ class TrainingControllerIT {
         mockMvc.perform(MockMvcRequestBuilders
                 .post(createTrainingUri)
                 .contentType(contentType)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .content(objectMapper.writeValueAsString(create)))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
 
         TrainerEntity trainer = trainerRepository.findByUsernameIgnoreCase(trainerUsername)
                 .orElseThrow(() -> new TrainerByUsernameNotFound("Trainer was not created"));
@@ -93,8 +104,8 @@ class TrainingControllerIT {
         mockMvc.perform(MockMvcRequestBuilders
                         .post(createTrainingUri)
                         .contentType(contentType)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                        .content(objectMapper.writeValueAsString(create)))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
 
         TrainerEntity trainer = trainerRepository.findByUsernameIgnoreCase(trainerUsername)
                 .orElseThrow(() -> new TrainerByUsernameNotFound("Trainer was not created"));
@@ -107,7 +118,8 @@ class TrainingControllerIT {
     @Test
     void givenEmptyRequiredField_whenCreateTraining_thenReturn4xx() throws Exception {
 
-        CreateTrainingRequest request1 = new CreateTrainingRequest(
+        ModifyTrainingRequest request1 = new ModifyTrainingRequest(
+                null,
                 null,
                 null,
                 null,
@@ -118,10 +130,43 @@ class TrainingControllerIT {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post("/api/v1/trainer-workload/")
-                        .contentType("application/JSON")
+                        .contentType(contentType)
                         .content(objectMapper.writeValueAsString(request1)))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
 
+    }
+
+    @Test
+    void givenNonExistingTraining_whenDeleteTraining_thenReturnNotFound() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/api/v1/trainer-workload/")
+                .contentType(contentType)
+                .content(objectMapper.writeValueAsString(delete)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void givenLegitimateTraining_whenDeleteTraining_thenDeleteTraining() throws Exception {
+        //Create training
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(createTrainingUri)
+                        .contentType(contentType)
+                        .content(objectMapper.writeValueAsString(create)))
+                .andExpect(MockMvcResultMatchers.status().isCreated());
+
+        //Check if the training has indeed been created
+        List<TrainingEntity> trainings = trainingRepository.findAllTrainingsByTrainer(trainerUsername, trainingDate);
+        assertEquals(1, trainings.size());
+
+        //Delete training
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(createTrainingUri)
+                        .contentType(contentType)
+                        .content(objectMapper.writeValueAsString(delete)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        trainings = trainingRepository.findAllTrainingsByTrainer(trainerUsername, trainingDate);
+        assertEquals(0, trainings.size());
     }
 
 }
