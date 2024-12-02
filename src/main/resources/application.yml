@@ -13,6 +13,10 @@ spring:
   h2:
     console:
       enabled: true
+  activemq:
+    broker-url: "tcp://localhost:61616"
+    user: admin
+    password: admin
 
 management:
   endpoint:

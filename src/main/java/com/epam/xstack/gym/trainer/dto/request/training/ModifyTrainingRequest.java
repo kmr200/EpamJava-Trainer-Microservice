@@ -2,6 +2,7 @@ package com.epam.xstack.gym.trainer.dto.request.training;
 
 import com.epam.xstack.gym.trainer.dto.request.Request;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredFiledException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,18 +37,31 @@ public class ModifyTrainingRequest implements Request {
     private static final Logger logger = LoggerFactory.getLogger(ModifyTrainingRequest.class);
 
     @Schema(description = "Username of the trainer", example = "Michael.Wilson")
+    @JsonProperty("username")
     private String username;
+
     @Schema(description = "First name of the trainer", example = "Michael")
+    @JsonProperty("firstName")
     private String firstName;
+
     @Schema(description = "Last name of the trainer", example = "Wilson")
+    @JsonProperty("lastName")
     private String lastName;
+
     @Schema(description = "Activity status of the trainer", example = "true")
+    @JsonProperty("isActive")
     private Boolean isActive;
+
     @Schema(description = "Expected date for the training", example = "2024-09-10")
+    @JsonProperty("trainingDate")
     private LocalDate trainingDate;
+
     @Schema(description = "Duration of the training in minutes", example = "30")
+    @JsonProperty("trainingDuration")
     private Integer trainingDuration;
+
     @Schema(description = "Action to be taken: CREATE/DELETE", examples = {"CREATE", "DELETE"})
+    @JsonProperty("actionType")
     private ActionType actionType;
 
     public Boolean getActive() {
