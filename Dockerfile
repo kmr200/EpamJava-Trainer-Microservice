@@ -29,4 +29,4 @@ RUN apt-get update && apt-get install -y curl \
 # Copy the executable JAR file into the container
 COPY --from=builder /app/build/libs/TrainerWorkloadService-*.jar app.jar
 
-EXPOSE 9081
+EXPOSE 8081

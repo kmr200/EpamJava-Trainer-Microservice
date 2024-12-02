@@ -1,10 +1,14 @@
 package com.epam.xstack.gym.trainer.dto.response.exception;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Schema(description = "Template for all the exception response bodies")
+@Getter
+@Setter
 public class ExceptionBodyTemplate {
 
     @Schema(description = "Time stamp", example = "2024-09-24T10:45:00Z")
@@ -34,48 +38,4 @@ public class ExceptionBodyTemplate {
         this.timeStamp = timeStamp;
     }
 
-    public String getError() {
-        return error;
-    }
-
-    public ExceptionBodyTemplate setError(String error) {
-        this.error = error;
-        return this;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public ExceptionBodyTemplate setMessage(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public ExceptionBodyTemplate setPath(String path) {
-        this.path = path;
-        return this;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public ExceptionBodyTemplate setStatus(int status) {
-        this.status = status;
-        return this;
-    }
-
-    public String getTimeStamp() {
-        return timeStamp;
-    }
-
-    public ExceptionBodyTemplate setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
-        return this;
-    }
 }
