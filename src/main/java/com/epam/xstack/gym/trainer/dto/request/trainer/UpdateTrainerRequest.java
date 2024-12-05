@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
-
 @Schema(description = "Template for requests at PUT /api/v1/trainer-workload/trainer/username/")
 @NoArgsConstructor
 @Data

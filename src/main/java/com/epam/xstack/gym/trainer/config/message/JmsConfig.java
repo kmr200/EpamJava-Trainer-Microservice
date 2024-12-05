@@ -4,6 +4,8 @@ import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.jms.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @Configuration
 public class JmsConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(JmsConfig.class);
 
     @Bean
     public MessageConverter jacksonJmsMessageConverter(ObjectMapper objectMapper) {
@@ -45,8 +49,11 @@ public class JmsConfig {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(jacksonJmsMessageConverter); // Set Jackson converter
+        factory.setErrorHandler(e -> {
+            logger.error("Error while processing message: {}", e.getMessage(), e.getCause());
+        });
         factory.setSessionTransacted(true); // Enable transactions
-        factory.setConcurrency("1-3"); // 1 to 3 concurrency
+        factory.setConcurrency("1-3");// 1 to 3 concurrency
         return factory;
     }
 

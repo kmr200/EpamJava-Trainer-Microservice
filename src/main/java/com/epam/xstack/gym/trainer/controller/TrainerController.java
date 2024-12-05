@@ -38,7 +38,7 @@ public class TrainerController implements TrainerControllerDocs {
                         username,
                         trainer.getFirstName(),
                         trainer.getLastName(),
-                        trainer.getActive(),
+                        trainer.getIsActive(),
                         trainingService.getSortedTrainingsByTrainer(username)
                 ),
                 HttpStatus.OK

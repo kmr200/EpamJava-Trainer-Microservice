@@ -6,6 +6,7 @@ import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
+import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
@@ -29,6 +30,9 @@ public class MessageConsumer {
     @JmsListener(destination = "modify-training")
     public void receiveModifyTrainingMessage(ModifyTrainingRequest request) {
         logger.debug("Manage training request: {}", request);
+        if (request.getActionType() == null) {
+            throw new EmptyRequiredField("Action type not specified");
+        }
 
         // Create training
         if (request.getActionType().equals(ActionType.CREATE)) {
@@ -67,8 +71,6 @@ public class MessageConsumer {
 
             logger.debug("Deleted training: {}", trainingDTO);
 
-        } else {
-            throw new EmptyRequiredField("Action type not specified");
         }
     }
 
@@ -83,5 +85,11 @@ public class MessageConsumer {
                 request.getLastName(),
                 request.getActive()
         );
+    }
+
+    @JmsListener(destination = "ActiveMQ.DLQ")
+    @Transactional
+    public void logDeadLetters(Object message) {
+        logger.warn("Dead letter was found: {}", message);
     }
 }

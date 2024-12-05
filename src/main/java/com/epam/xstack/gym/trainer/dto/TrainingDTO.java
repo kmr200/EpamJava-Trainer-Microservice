@@ -1,13 +1,12 @@
 package com.epam.xstack.gym.trainer.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Data
+@AllArgsConstructor
 public class TrainingDTO {
 
     private String trainingUUID;
@@ -22,4 +21,13 @@ public class TrainingDTO {
         this.trainingUUID = trainingId;
     }
 
+    public TrainingDTO setUUID(String trainingUUID) {
+        this.trainingUUID = trainingUUID;
+        return this;
+    }
+
+    public TrainingDTO setTrainingUUID(String trainingUUID) {
+        this.trainingUUID = trainingUUID;
+        return this;
+    }
 }

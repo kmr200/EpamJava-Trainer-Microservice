@@ -24,14 +24,4 @@ public class TrainerDTO {
         this.lastName = lastName;
         this.username = username;
     }
-
-    public Boolean getActive() {
-        return isActive;
-    }
-
-    public TrainerDTO setActive(Boolean active) {
-        isActive = active;
-        return this;
-    }
-
 }
