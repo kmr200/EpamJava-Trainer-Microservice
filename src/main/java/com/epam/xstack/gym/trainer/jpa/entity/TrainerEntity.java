@@ -1,40 +1,37 @@
 package com.epam.xstack.gym.trainer.jpa.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.Id;
+import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
-@Entity
-@Table(name = "trainer")
-@NoArgsConstructor
+@Document(collection = "trainer")
+@AllArgsConstructor
 @Data
+@NoArgsConstructor
 public class TrainerEntity {
 
-    public TrainerEntity(String username, String firstName, String lastName, Boolean isActive) {
-        this.firstName = firstName;
-        this.isActive = isActive;
-        this.lastName = lastName;
-        this.username = username;
-    }
-
     @Id
-    @Column(name = "username", nullable = false)
-    private String username;
+    private String id;
 
-    @Column(name = "first_name", nullable = false)
+    @Indexed(unique = true)
+    private String trainerUsername;
     private String firstName;
-
-    @Column(name = "last_name", nullable = false)
     private String lastName;
+    private Boolean status;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Map<Integer, Map<Integer, Integer>> trainingSummary;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
-
-    @OneToMany(mappedBy = "trainer", fetch = FetchType.EAGER)
-    private Set<TrainingEntity> trainings;
+    public TrainerEntity(String trainerUsername, String firstName, String lastName, Boolean status) {
+        this.trainerUsername = trainerUsername;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.status = status;
+    }
 
 }

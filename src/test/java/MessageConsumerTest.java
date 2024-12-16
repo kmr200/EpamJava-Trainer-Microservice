@@ -1,12 +1,10 @@
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.service.MessageConsumer;
 import com.epam.xstack.gym.trainer.service.TrainerService;
-import com.epam.xstack.gym.trainer.service.TrainingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

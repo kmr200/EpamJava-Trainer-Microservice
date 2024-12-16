@@ -4,7 +4,6 @@ import com.epam.xstack.gym.trainer.controller.docs.TrainerControllerDocs;
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
 import com.epam.xstack.gym.trainer.dto.response.GetTrainingsResponse;
 import com.epam.xstack.gym.trainer.service.TrainerService;
-import com.epam.xstack.gym.trainer.service.TrainingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,11 +17,9 @@ public class TrainerController implements TrainerControllerDocs {
     private static final Logger logger = LoggerFactory.getLogger(TrainerController.class);
 
     private final TrainerService trainerService;
-    private final TrainingService trainingService;
 
-    public TrainerController(TrainerService trainerService, TrainingService trainingService) {
+    public TrainerController(TrainerService trainerService) {
         this.trainerService = trainerService;
-        this.trainingService = trainingService;
     }
 
     @GetMapping(value = "/{username}/trainings")
@@ -38,8 +35,8 @@ public class TrainerController implements TrainerControllerDocs {
                         username,
                         trainer.getFirstName(),
                         trainer.getLastName(),
-                        trainer.getIsActive(),
-                        trainingService.getSortedTrainingsByTrainer(username)
+                        trainer.getStatus(),
+                        trainer.getTrainingSummary()
                 ),
                 HttpStatus.OK
         );

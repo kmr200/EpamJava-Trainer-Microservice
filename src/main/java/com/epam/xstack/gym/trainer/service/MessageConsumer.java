@@ -1,12 +1,10 @@
 package com.epam.xstack.gym.trainer.service;
 
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
-import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
@@ -19,11 +17,9 @@ public class MessageConsumer {
     private static final Logger logger = LoggerFactory.getLogger(MessageConsumer.class);
 
     private final TrainerService trainerService;
-    private final TrainingService trainingService;
 
-    public MessageConsumer(TrainerService trainerService, TrainingService trainingService) {
+    public MessageConsumer(TrainerService trainerService) {
         this.trainerService = trainerService;
-        this.trainingService = trainingService;
     }
 
     @Transactional
@@ -45,16 +41,16 @@ public class MessageConsumer {
                     request.getUsername(),
                     request.getFirstName(),
                     request.getLastName(),
-                    request.getActive()
+                    request.getStatus()
             );
             logger.debug("Created/received trainer: {}", trainer);
 
-            TrainingDTO training = trainingService.addTraining(
+            TrainerDTO updatedTrainer = trainerService.addTraining(
                     request.getUsername(),
                     request.getTrainingDate(),
                     request.getTrainingDuration()
             );
-            logger.debug("Created training: {}", training);
+            logger.debug("Created training for the following trainer: {}", updatedTrainer);
 
         } else if (request.getActionType().equals(ActionType.DELETE)) {
             // Delete training
@@ -63,13 +59,13 @@ public class MessageConsumer {
 
             logger.debug("Delete training request: {}", request);
 
-            TrainingDTO trainingDTO = trainingService.deleteTraining(
+            TrainerDTO trainer = trainerService.deleteTraining(
                     request.getUsername(),
                     request.getTrainingDate(),
                     request.getTrainingDuration()
             );
 
-            logger.debug("Deleted training: {}", trainingDTO);
+            logger.debug("Deleted training for trainer: {}", trainer);
 
         }
     }
@@ -87,9 +83,27 @@ public class MessageConsumer {
         );
     }
 
-    @JmsListener(destination = "ActiveMQ.DLQ")
+    @JmsListener(destination = "DLQ.modify-training")
     @Transactional
-    public void logDeadLetters(Object message) {
-        logger.warn("Dead letter was found: {}", message);
+    public void processModifyTrainingDLQ(ModifyTrainingRequest request) {
+        // Retry once more
+        try {
+            receiveModifyTrainingMessage(request);
+        } catch (Exception e) {
+            //In case of failure log the message
+            logger.error("Modify training request has failed: {}", request);
+        }
     }
+
+    @JmsListener(destination = "DLQ.update-trainer")
+    @Transactional
+    public void processUpdateTrainerDLQ(UpdateTrainerRequest request) {
+        //Retry once more
+        try {
+            receiveUpdateTrainerMessage(request);
+        } catch (Exception e) {
+            logger.error("Update training request has failed: {}", request);
+        }
+    }
+
 }

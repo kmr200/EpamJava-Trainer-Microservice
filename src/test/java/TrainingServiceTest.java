@@ -1,18 +1,11 @@
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
-import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
-import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
-import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
-import com.epam.xstack.gym.trainer.mapper.TrainingMapper;
-import com.epam.xstack.gym.trainer.service.TrainingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 
 import java.time.LocalDate;
 import java.util.*;

@@ -10,7 +10,6 @@ public interface TrainerMapper {
 
     TrainerDTO toDTO(TrainerEntity trainerEntity);
 
-    @Mapping(target = "trainings", ignore = true)
     TrainerEntity toEntity(TrainerDTO dto);
 
 }
