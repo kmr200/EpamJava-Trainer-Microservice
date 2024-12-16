@@ -2,7 +2,6 @@ package com.epam.xstack.gym.trainer.controller;
 
 import com.epam.xstack.gym.trainer.controller.docs.TrainerControllerDocs;
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.response.GetTrainingsResponse;
 import com.epam.xstack.gym.trainer.service.TrainerService;
 import com.epam.xstack.gym.trainer.service.TrainingService;
@@ -39,29 +38,11 @@ public class TrainerController implements TrainerControllerDocs {
                         username,
                         trainer.getFirstName(),
                         trainer.getLastName(),
-                        trainer.getActive(),
+                        trainer.getIsActive(),
                         trainingService.getSortedTrainingsByTrainer(username)
                 ),
                 HttpStatus.OK
         );
-    }
-
-    @PutMapping(value = "/{username}/")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<TrainerDTO> updateTrainer(
-            @PathVariable("username") String username,
-            @RequestBody UpdateTrainerRequest request
-    ) {
-        logger.debug("Update trainer request: {}", request);
-
-        TrainerDTO updateTrainer = trainerService.updateTrainer(
-                username,
-                request.getFirstName(),
-                request.getLastName(),
-                request.getActive()
-        );
-
-        return new ResponseEntity<>(updateTrainer, HttpStatus.ACCEPTED);
     }
 
 }

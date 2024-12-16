@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,6 +40,9 @@ public class TrainerControllerIT {
     private TrainerRepository trainerRepository;
     @Autowired
     private TrainingRepository trainingRepository;
+
+    @MockBean
+    CacheManager cacheManager;
 
     private final String trainerUsername = "trainer";
     private final String trainerFirstName = "John";
@@ -102,43 +107,6 @@ public class TrainerControllerIT {
     }
 
     @Test
-    void whenUpdateTrainer_thenSaveChanges() throws Exception {
-
-        //Save a new trainer:
-        trainerRepository.save(
-                new TrainerEntity(
-                        trainerUsername,
-                        trainerFirstName,
-                        trainerLastName,
-                        true
-                )
-        );
-
-        String updatedFirstName = "UpdatedFirstName";
-        String updatedLastName = "UpdatedLastName";
-
-        UpdateTrainerRequest request = new UpdateTrainerRequest(
-                updatedFirstName,
-                updatedLastName,
-                false
-        );
-
-        //Update saved trainer:
-        mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/v1/trainer-workload/trainer/" + trainerUsername + "/")
-                .contentType(contentType)
-                .content(objectMapper.writeValueAsString(request))
-        ).andExpect(MockMvcResultMatchers.status().isAccepted());
-
-        TrainerEntity trainer = trainerRepository.findById(trainerUsername).get();
-
-        assertEquals(updatedFirstName, trainer.getFirstName());
-        assertEquals(updatedLastName, trainer.getLastName());
-        assertEquals(false, trainer.getActive());
-
-    }
-
-    @Test
     void givenNonExistingTrainerUsername_whenUpdateTrainer_thenReturn4xx() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders
@@ -146,51 +114,6 @@ public class TrainerControllerIT {
                 .contentType(contentType)
                 .content(objectMapper.writeValueAsString(new UpdateTrainerRequest()))
                 ).andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
-
-    @Test
-    void whenUpdateTrainerStatusToFalse_thenDeleteTrainingsAssignedToTrainer() throws Exception {
-
-        //Save a new trainer:
-        TrainerEntity trainer = trainerRepository.save(
-                new TrainerEntity(
-                        trainerUsername,
-                        trainerFirstName,
-                        trainerLastName,
-                        true
-                )
-        );
-        //Save trainings
-        trainingRepository.saveAll(List.of(
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                ),
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                ),
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                )
-        ));
-
-        //Update trainer
-        mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/v1/trainer-workload/trainer/" + trainerUsername + "/")
-                .contentType(contentType)
-                .content(objectMapper.writeValueAsString(new UpdateTrainerRequest(
-                        null,
-                        null,
-                        false
-                )))).andExpect(MockMvcResultMatchers.status().isAccepted());
-
-        assertEquals(0, trainingRepository.findAllTrainingsByTrainer(trainerUsername, trainingDate).size());
-
     }
 
 }

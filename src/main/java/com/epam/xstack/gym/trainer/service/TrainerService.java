@@ -9,6 +9,9 @@ import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
 import com.epam.xstack.gym.trainer.mapper.TrainerMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,10 +40,10 @@ public class TrainerService {
             Boolean isActive
     ) {
         logger.debug("Get or create trainer by username {}", username);
-        TrainerEntity trainer;
+        TrainerDTO trainer;
         //Check if the trainer already exists
         try {
-            trainer = getTrainer(username);
+            trainer = getTrainerByUsername(username);
         } catch (TrainerByUsernameNotFound e) {
             logger.info("Trainer with username {} does not exist, creating new profile", username);
             // Create if not
@@ -50,14 +53,16 @@ public class TrainerService {
         }
 
         logger.debug("Returning trainer {}", trainer);
-        return trainerMapper.toDTO(trainer);
+        return trainer;
     }
 
+    @Cacheable(value = "trainerInfo", key = "#username")
     public TrainerDTO getTrainerByUsername(String username) {
         logger.debug("Get trainer by username {}", username);
         return trainerMapper.toDTO(getTrainer(username));
     }
 
+    @CachePut(value = "trainerInfo", key = "#username")
     @Transactional
     public TrainerDTO updateTrainer(
             String username,
@@ -72,12 +77,12 @@ public class TrainerService {
 
         if ( firstName != null && !firstName.isEmpty() ) trainer.setFirstName(firstName);
         if ( lastName != null && !lastName.isEmpty() ) trainer.setLastName(lastName);
-        if ( isActive != null && isActive.booleanValue() != trainer.getActive() ) {
+        if ( isActive != null && isActive.booleanValue() != trainer.getIsActive() ) {
             //If trainer is inactive, delete training's associated with the trainer
             if (!isActive) {
                 trainingRepository.deleteAllByTrainer(username);
             }
-            trainer.setActive(isActive);
+            trainer.setIsActive(isActive);
         }
 
         return trainerMapper.toDTO(
@@ -85,7 +90,20 @@ public class TrainerService {
         );
     }
 
-    private TrainerEntity createTrainer(
+    @CachePut(value = "trainerInfo", key = "#username")
+    public TrainerDTO createTrainer(
+            String username,
+            String firstName,
+            String lastName,
+            Boolean isActive
+    ) {
+        logger.debug("Create trainer with username {}", username);
+        return trainerMapper.toDTO(createTrainerEntity(
+                username, firstName, lastName, isActive
+        ));
+    }
+
+    private TrainerEntity createTrainerEntity(
             String username,
             String firstName,
             String lastName,

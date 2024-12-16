@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TrainerMapper {
 
-    @Mapping(target = "active", source = "active")
     TrainerDTO toDTO(TrainerEntity trainerEntity);
 
     @Mapping(target = "trainings", ignore = true)

@@ -1,12 +1,10 @@
 package com.epam.xstack.gym.trainer.jpa.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Entity
 @Table(name = "training")

@@ -10,6 +10,10 @@ import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
 import com.epam.xstack.gym.trainer.mapper.TrainingMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,13 +29,21 @@ public class TrainingService {
     private final TrainingRepository trainingRepository;
     private final TrainingMapper trainingMapper;
     private final TrainerRepository trainerRepository;
+    private final CacheManager cacheManager;
 
-    public TrainingService(TrainingRepository trainingRepository, TrainingMapper trainingMapper, TrainerRepository trainerRepository) {
+    public TrainingService(
+            TrainingRepository trainingRepository,
+            TrainingMapper trainingMapper,
+            TrainerRepository trainerRepository,
+            CacheManager cacheManager
+    ) {
         this.trainingRepository = trainingRepository;
         this.trainingMapper = trainingMapper;
         this.trainerRepository = trainerRepository;
+        this.cacheManager = cacheManager;
     }
 
+    @CachePut(value = "trainingInfo", key = "#result.trainingUUID")
     public TrainingDTO addTraining (
             String trainerUsername,
             LocalDate trainingDate,
@@ -74,6 +86,7 @@ public class TrainingService {
                 ));
     }
 
+    @CacheEvict(value = "trainingInfo", key = "#result.trainingUUID")
     public TrainingDTO deleteTraining(
             String trainerUsername,
             LocalDate trainingDate,
