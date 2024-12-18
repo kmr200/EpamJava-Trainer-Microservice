@@ -9,9 +9,6 @@ spring:
   cloud:
     discovery:
       enabled: false
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/testdb
 
 server:
   port: 8081

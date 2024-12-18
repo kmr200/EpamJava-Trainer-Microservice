@@ -15,7 +15,7 @@ public class TrainerEntity {
     @Id
     private String id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "unique_trainer_username_idx", unique = true)
     private String trainerUsername;
     private String firstName;
     private String lastName;

@@ -12,6 +12,7 @@ spring:
       ttl: 3 #Time to live in minutes
     mongodb:
       uri: mongodb://admin:your_secure_password@mongodb:27017/trainer-workload?authSource=admin
+      auto-index-creation: true
 
 management:
   endpoint:
