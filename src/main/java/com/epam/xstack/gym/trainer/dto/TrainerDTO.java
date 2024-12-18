@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Response template for /api/v1/trainer-workload/trainer/username/ endpoint")
@@ -24,6 +23,17 @@ public class TrainerDTO {
     @Schema(description = "Activity status of the trainer", example = "true")
     private Boolean status;
     @Schema(description = "Trainings summary")
-    private Map<Integer, Map<Integer, Integer>> trainingSummary;
+    private TrainingSummary trainingSummary;
 
+    public TrainerDTO(String trainerUsername, String firstName, String lastName, Boolean status, TrainingSummary trainingSummary) {
+        this.trainerUsername = trainerUsername;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.status = status;
+        this.trainingSummary = trainingSummary;
+    }
+
+    public TrainingSummary getTrainingSummary() {
+        return trainingSummary == null ? new TrainingSummary() : trainingSummary;
+    }
 }

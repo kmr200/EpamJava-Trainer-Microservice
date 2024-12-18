@@ -1,6 +1,7 @@
 package com.epam.xstack.gym.trainer.service;
 
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
+import com.epam.xstack.gym.trainer.dto.TrainingSummary;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
@@ -57,15 +58,13 @@ public class TrainerService {
         return trainer;
     }
 
-    @Transactional
+    @CachePut(value = "trainerInfo", key = "#trainerUsername")
     public TrainerDTO addTraining(String trainerUsername, LocalDate trainingDate, Integer trainingDuration) {
         TrainerEntity trainer = getTrainer(trainerUsername);
-        Map<Integer, Map<Integer, Integer>> trainingSummary = trainer.getTrainingSummary();
-        trainingSummary = trainingSummary == null ? new HashMap<Integer, Map<Integer, Integer>>() : trainingSummary;
+        TrainingSummary trainingSummary = trainer.getTrainingSummary();
+        trainingSummary = trainingSummary == null ? new TrainingSummary() : trainingSummary;
 
-        trainingSummary.computeIfAbsent(trainingDate.getYear(), year -> new HashMap<>())
-                .merge(trainingDate.getMonthValue(), trainingDuration, Integer::sum);
-
+        trainingSummary.addTraining(trainingDate, trainingDuration);
         trainer.setTrainingSummary(trainingSummary);
 
         return trainerMapper.toDTO(
@@ -73,22 +72,14 @@ public class TrainerService {
         );
     }
 
-    @Transactional
+    @CachePut(value = "trainerInfo", key = "#trainerUsername")
     public TrainerDTO deleteTraining(String trainerUsername, LocalDate trainingDate, Integer trainingDuration) {
         TrainerEntity trainer = getTrainer(trainerUsername);
-        Map<Integer, Map<Integer, Integer>> trainingSummary = trainer.getTrainingSummary();
-        trainingSummary = trainingSummary == null ? new HashMap<Integer, Map<Integer, Integer>>() : trainingSummary;
+        TrainingSummary trainingSummary = trainer.getTrainingSummary();
+        trainingSummary = trainingSummary == null ? new TrainingSummary() : trainingSummary;
 
-        trainingSummary.computeIfPresent(trainingDate.getYear(), (year, monthSummary) -> {
-            monthSummary.computeIfPresent(trainingDate.getMonthValue(), (month, summary) -> {
-                // Reduce training duration or remove the entry if it becomes zero
-                int updatedSummary = summary - trainingDuration;
-                return updatedSummary > 0 ? updatedSummary : null; // Remove if <= 0
-            });
-
-            // Remove the year entry if the month summary becomes empty
-            return monthSummary.isEmpty() ? null : monthSummary;
-        });
+        trainingSummary.deleteTraining(trainingDate, trainingDuration);
+        trainer.setTrainingSummary(trainingSummary);
 
         return trainerMapper.toDTO(trainerRepository.save(trainer));
     }
@@ -100,7 +91,6 @@ public class TrainerService {
     }
 
     @CachePut(value = "trainerInfo", key = "#username")
-    @Transactional
     public TrainerDTO updateTrainer(
             String username,
             String firstName,

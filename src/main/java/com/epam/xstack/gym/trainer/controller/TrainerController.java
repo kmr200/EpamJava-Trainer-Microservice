@@ -36,7 +36,7 @@ public class TrainerController implements TrainerControllerDocs {
                         trainer.getFirstName(),
                         trainer.getLastName(),
                         trainer.getStatus(),
-                        trainer.getTrainingSummary()
+                        trainer.getTrainingSummary().getSummary()
                 ),
                 HttpStatus.OK
         );
