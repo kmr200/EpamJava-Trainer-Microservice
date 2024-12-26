@@ -20,13 +20,13 @@ public class ModifyTrainingRequest implements Request {
             String username,
             String firstName,
             String lastName,
-            Boolean isActive,
+            Boolean status,
             LocalDate trainingDate,
             Integer trainingDuration,
             ActionType actionType
     ) {
         this.firstName = firstName;
-        this.isActive = isActive;
+        this.status = status;
         this.lastName = lastName;
         this.trainingDate = trainingDate;
         this.trainingDuration = trainingDuration;
@@ -49,8 +49,7 @@ public class ModifyTrainingRequest implements Request {
     private String lastName;
 
     @Schema(description = "Activity status of the trainer", example = "true")
-    @JsonProperty("isActive")
-    private Boolean isActive;
+    private Boolean status;
 
     @Schema(description = "Expected date for the training", example = "2024-09-10")
     @JsonProperty("trainingDate")
@@ -63,15 +62,6 @@ public class ModifyTrainingRequest implements Request {
     @Schema(description = "Action to be taken: CREATE/DELETE", examples = {"CREATE", "DELETE"})
     @JsonProperty("actionType")
     private ActionType actionType;
-
-    public Boolean getActive() {
-        return isActive;
-    }
-
-    public ModifyTrainingRequest setActive(Boolean active) {
-        isActive = active;
-        return this;
-    }
 
     public void deleteCheckRequiredFields() {
         if (username == null || username.isEmpty() ||
@@ -86,7 +76,7 @@ public class ModifyTrainingRequest implements Request {
         if (username == null || username.isEmpty() ||
                 firstName == null || firstName.isEmpty() ||
                 lastName == null || lastName.isEmpty() ||
-                isActive == null || trainingDate == null ||
+                status == null || trainingDate == null ||
                 trainingDuration == null || actionType == null) {
             logger.warn("Required fields are missing");
             throw new EmptyRequiredFiledException("Required fields are missing");

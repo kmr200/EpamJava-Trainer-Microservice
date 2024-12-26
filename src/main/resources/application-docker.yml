@@ -1,18 +1,6 @@
 spring:
   application:
     name: trainer-workload-service
-  datasource:
-    url: jdbc:h2:mem:test
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: none
-  h2:
-    console:
-      enabled: true
   activemq:
     broker-url: "tcp://activemq:61616"
     user: admin
@@ -22,6 +10,9 @@ spring:
       host: redis
       port: 6379
       ttl: 3 #Time to live in minutes
+    mongodb:
+      uri: mongodb://admin:your_secure_password@mongodb:27017/trainer-workload?authSource=admin
+      auto-index-creation: true
 
 management:
   endpoint:

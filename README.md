@@ -33,5 +33,5 @@ returns summary of the trainings after the current date\
 Update trainer: PUT /api/v1/trainer-workload/trainer/{username}/ \
 Updates firstName/lastName/active of the trainer. If the trainer is inactive, all the trainings related to the trainer are deleted
 ### Repository:
-Implements in-memory H2 database with two tables (trainer, training). Some data is preloaded  for testing purposes.
-You can check out the script here: [Schema](./src/main/resources/schema.sql), [Data](./src/main/resources/data.sql)
+Connects to MongoDb 'trainer-workload' database and saves documents in 'trainer' collection.\
+Mongo is expected to be started at localhost:27017 when running locally.

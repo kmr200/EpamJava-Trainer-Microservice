@@ -1,119 +1,80 @@
 import com.epam.xstack.gym.trainer.TrainerWorkloadServiceApplication;
-import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
+import com.epam.xstack.gym.trainer.dto.TrainingSummary;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
-import com.epam.xstack.gym.trainer.jpa.entity.TrainingEntity;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
-import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.epam.xstack.gym.trainer.service.TrainerService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = TrainerWorkloadServiceApplication.class)
 @ActiveProfiles("test")
-@EnableJpaRepositories(basePackages = "com.epam.xstack.gym.trainer.jpa.repository")
+@EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 @AutoConfigureMockMvc
-@Transactional
 public class TrainerControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private TrainerRepository trainerRepository;
-    @Autowired
-    private TrainingRepository trainingRepository;
+    private TrainerService trainerService;
 
     @MockBean
-    CacheManager cacheManager;
+    private TrainerRepository trainerRepositoryMock;
 
-    private final String trainerUsername = "trainer";
-    private final String trainerFirstName = "John";
-    private final String trainerLastName = "Doe";
-    private final String contentType = "application/json";
-    private final LocalDate trainingDate = LocalDate.now();
-    private final Integer trainingDuration = 30;
+    private static final String BASE_URL = "/api/v1/trainer-workload/trainer";
+
+    private static final String USERNAME = "michael.wilson";
+    private static final String FIRSTNAME = "Michael";
+    private static final String LASTNAME = "Wilson";
+    private static final TrainerEntity trainerEntity = new TrainerEntity(
+            USERNAME,
+            FIRSTNAME,
+            LASTNAME,
+            true);
 
     @Test
-    void whenGetTrainings_thenReturnTrainingSummary() throws Exception {
+    public void givenValidUsername_whenGetTrainings_thenReturnTrainingsResponse() throws Exception {
+        LocalDate today = LocalDate.now();
+        trainerEntity.setTrainingSummary(
+                new TrainingSummary()
+                        .addTraining(today, 30)
+        );
+        when(trainerRepositoryMock.findByTrainerUsernameIgnoreCase(USERNAME)).thenReturn(
+                Optional.of(trainerEntity)
+        );
 
-        objectMapper.registerModule(new JavaTimeModule());
-
-        TrainerEntity trainer = trainerRepository.save(new TrainerEntity(
-                trainerUsername,
-                trainerFirstName,
-                trainerLastName,
-                true
-        ));
-        //Save three same trainings
-        trainingRepository.saveAll(List.of(
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                ),
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                ),
-                new TrainingEntity(
-                        trainingDate,
-                        trainingDuration,
-                        trainer
-                )
-        ));
-
-        MvcResult response = mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/trainer-workload/trainer/" + trainerUsername + "/trainings")
-                .contentType(contentType)
-        ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
-
-        // Get the summary from response
-        Integer summaryTrainings = objectMapper.readTree(response.getResponse().getContentAsString())
-                .get("trainings")
-                .get(String.valueOf(trainingDate.getYear()))
-                .get(String.valueOf(trainingDate.getMonthValue()))
-                .asInt();
-
-        assertEquals(trainingDuration * 3, summaryTrainings);
+        mockMvc.perform(get(BASE_URL + "/" + USERNAME + "/trainings")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.trainerUsername").value(USERNAME))
+                .andExpect(jsonPath("$.trainerFirstName").value(FIRSTNAME))
+                .andExpect(jsonPath("$.trainerLastName").value(LASTNAME))
+                .andExpect(jsonPath("$.trainerStatus").value(true))
+                .andExpect(jsonPath("$.trainings." + today.getYear() + "." + today.getMonthValue()).value(30));
     }
 
     @Test
-    void givenNonExistingTrainerUsername_whenGetTrainingsSummary_thenReturn4xx() throws Exception {
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/v1/trainer-workload/trainer/NonExistingTrainer/trainings")
-                .contentType(contentType)
-        ).andExpect(MockMvcResultMatchers.status().is4xxClientError());
-
+    public void givenInvalidUsername_whenGetTrainings_thenReturnNotFound() throws Exception {
+        when(trainerRepositoryMock.findByTrainerUsernameIgnoreCase(Mockito.anyString())).thenReturn(Optional.empty());
+        mockMvc.perform(get(BASE_URL + "/invalid_user/trainings")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
-
-    @Test
-    void givenNonExistingTrainerUsername_whenUpdateTrainer_thenReturn4xx() throws Exception {
-
-        mockMvc.perform(MockMvcRequestBuilders
-                .put("/api/v1/trainer-workload/trainer/NonExistingTrainer/")
-                .contentType(contentType)
-                .content(objectMapper.writeValueAsString(new UpdateTrainerRequest()))
-                ).andExpect(MockMvcResultMatchers.status().is4xxClientError());
-    }
-
 }

@@ -1,19 +1,23 @@
 package com.epam.xstack.gym.trainer.service;
 
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
+import com.epam.xstack.gym.trainer.dto.TrainingSummary;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.exception.TrainerByUsernameNotFound;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
-import com.epam.xstack.gym.trainer.jpa.repository.TrainingRepository;
 import com.epam.xstack.gym.trainer.mapper.TrainerMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class TrainerService {
@@ -22,12 +26,10 @@ public class TrainerService {
     private static final Logger logger = LoggerFactory.getLogger(TrainerService.class);
 
     private final TrainerRepository trainerRepository;
-    private final TrainingRepository trainingRepository;
     private final TrainerMapper trainerMapper;
 
-    public TrainerService(TrainerRepository trainerRepository, TrainingRepository trainingRepository, TrainerMapper trainerMapper) {
+    public TrainerService(TrainerRepository trainerRepository, TrainerMapper trainerMapper) {
         this.trainerRepository = trainerRepository;
-        this.trainingRepository = trainingRepository;
         this.trainerMapper = trainerMapper;
     }
 
@@ -56,6 +58,32 @@ public class TrainerService {
         return trainer;
     }
 
+    @CachePut(value = "trainerInfo", key = "#trainerUsername")
+    public TrainerDTO addTraining(String trainerUsername, LocalDate trainingDate, Integer trainingDuration) {
+        TrainerEntity trainer = getTrainer(trainerUsername);
+        TrainingSummary trainingSummary = trainer.getTrainingSummary();
+        trainingSummary = trainingSummary == null ? new TrainingSummary() : trainingSummary;
+
+        trainingSummary.addTraining(trainingDate, trainingDuration);
+        trainer.setTrainingSummary(trainingSummary);
+
+        return trainerMapper.toDTO(
+                trainerRepository.save(trainer)
+        );
+    }
+
+    @CachePut(value = "trainerInfo", key = "#trainerUsername")
+    public TrainerDTO deleteTraining(String trainerUsername, LocalDate trainingDate, Integer trainingDuration) {
+        TrainerEntity trainer = getTrainer(trainerUsername);
+        TrainingSummary trainingSummary = trainer.getTrainingSummary();
+        trainingSummary = trainingSummary == null ? new TrainingSummary() : trainingSummary;
+
+        trainingSummary.deleteTraining(trainingDate, trainingDuration);
+        trainer.setTrainingSummary(trainingSummary);
+
+        return trainerMapper.toDTO(trainerRepository.save(trainer));
+    }
+
     @Cacheable(value = "trainerInfo", key = "#username")
     public TrainerDTO getTrainerByUsername(String username) {
         logger.debug("Get trainer by username {}", username);
@@ -63,26 +91,25 @@ public class TrainerService {
     }
 
     @CachePut(value = "trainerInfo", key = "#username")
-    @Transactional
     public TrainerDTO updateTrainer(
             String username,
             String firstName,
             String lastName,
-            Boolean isActive
+            Boolean status
     ) {
         logger.debug("Update trainer by username {}", username);
         checkRequiredFields(username);
 
         TrainerEntity trainer = getTrainer(username);
 
-        if ( firstName != null && !firstName.isEmpty() ) trainer.setFirstName(firstName);
-        if ( lastName != null && !lastName.isEmpty() ) trainer.setLastName(lastName);
-        if ( isActive != null && isActive.booleanValue() != trainer.getIsActive() ) {
+        if (StringUtils.hasText(firstName)) trainer.setFirstName(firstName);
+        if (StringUtils.hasText(lastName)) trainer.setLastName(lastName);
+        if (status != null && !status.equals(trainer.getStatus())) {
             //If trainer is inactive, delete training's associated with the trainer
-            if (!isActive) {
-                trainingRepository.deleteAllByTrainer(username);
+            if (!status) {
+                trainer.setTrainingSummary(null);
             }
-            trainer.setIsActive(isActive);
+            trainer.setStatus(status);
         }
 
         return trainerMapper.toDTO(
@@ -95,11 +122,11 @@ public class TrainerService {
             String username,
             String firstName,
             String lastName,
-            Boolean isActive
+            Boolean status
     ) {
         logger.debug("Create trainer with username {}", username);
         return trainerMapper.toDTO(createTrainerEntity(
-                username, firstName, lastName, isActive
+                username, firstName, lastName, status
         ));
     }
 
@@ -107,17 +134,17 @@ public class TrainerService {
             String username,
             String firstName,
             String lastName,
-            Boolean isActive
+            Boolean status
     ) {
         logger.debug("Create trainer with username {}", username);
         return trainerRepository.save(
-                new TrainerEntity(username, firstName, lastName, isActive)
+                new TrainerEntity(username, firstName, lastName, status)
         );
     }
 
     private TrainerEntity getTrainer(String username) {
         logger.debug("Get trainer with username {}", username);
-        return trainerRepository.findByUsernameIgnoreCase(username)
+        return trainerRepository.findByTrainerUsernameIgnoreCase(username)
                 .orElseThrow(() -> new TrainerByUsernameNotFound("Trainer with username " + username + " not found"));
     }
 

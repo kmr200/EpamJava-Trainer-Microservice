@@ -1,12 +1,11 @@
 import com.epam.xstack.gym.trainer.dto.TrainerDTO;
-import com.epam.xstack.gym.trainer.dto.TrainingDTO;
 import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
 import com.epam.xstack.gym.trainer.service.MessageConsumer;
 import com.epam.xstack.gym.trainer.service.TrainerService;
-import com.epam.xstack.gym.trainer.service.TrainingService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,111 +18,109 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageConsumerTest {
+class MessageConsumerTest {
 
-    private static final String USERNAME = "username";
+    private static final String USERNAME = "trainer123";
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Doe";
-    private static final boolean ACTIVE = true;
-    private static final LocalDate TRAINING_DATE = LocalDate.of(2023, 12, 4);
+    private static final boolean STATUS = true;
     private static final int TRAINING_DURATION = 60;
+    private static final LocalDate TRAINING_DATE = LocalDate.now();
 
     @Mock
     private TrainerService trainerService;
 
-    @Mock
-    private TrainingService trainingService;
-
     @InjectMocks
     private MessageConsumer messageConsumer;
 
-    @Test
-    void givenCreateActionType_whenReceiveModifyTrainingMessage_thenCreateTraining() {
-        ModifyTrainingRequest request = new ModifyTrainingRequest(
-                USERNAME,
-                FIRST_NAME,
-                LAST_NAME,
-                ACTIVE,
-                TRAINING_DATE,
-                TRAINING_DURATION,
-                ActionType.CREATE
-        );
+    private ModifyTrainingRequest modifyTrainingRequest;
+    private UpdateTrainerRequest updateTrainerRequest;
 
-        TrainerDTO trainerDTO = new TrainerDTO();
-        when(trainerService.getOrCreate(USERNAME, FIRST_NAME, LAST_NAME, ACTIVE))
-                .thenReturn(trainerDTO);
+    @BeforeEach
+    void setup() {
+        modifyTrainingRequest = new ModifyTrainingRequest();
+        modifyTrainingRequest.setUsername(USERNAME);
+        modifyTrainingRequest.setFirstName(FIRST_NAME);
+        modifyTrainingRequest.setLastName(LAST_NAME);
+        modifyTrainingRequest.setStatus(STATUS);
+        modifyTrainingRequest.setTrainingDuration(TRAINING_DURATION);
+        modifyTrainingRequest.setTrainingDate(TRAINING_DATE);
 
-        TrainingDTO trainingDTO = new TrainingDTO();
-        when(trainingService.addTraining(USERNAME, TRAINING_DATE, TRAINING_DURATION))
-                .thenReturn(trainingDTO);
-
-        // Act
-        messageConsumer.receiveModifyTrainingMessage(request);
-
-        // Assert
-        verify(trainerService, times(1)).getOrCreate(USERNAME, FIRST_NAME, LAST_NAME, ACTIVE);
-        verify(trainingService, times(1)).addTraining(USERNAME, TRAINING_DATE, TRAINING_DURATION);
+        updateTrainerRequest = new UpdateTrainerRequest();
+        updateTrainerRequest.setUsername(USERNAME);
+        updateTrainerRequest.setFirstName(FIRST_NAME);
+        updateTrainerRequest.setLastName(LAST_NAME);
+        updateTrainerRequest.setActive(STATUS);
     }
 
     @Test
-    void givenDeleteActionType_whenReceiveModifyTrainingMessage_thenDeleteTraining() {
-        // Arrange
-        ModifyTrainingRequest request = new ModifyTrainingRequest(
-                USERNAME,
-                FIRST_NAME,
-                LAST_NAME,
-                ACTIVE,
-                TRAINING_DATE,
-                TRAINING_DURATION,
-                ActionType.DELETE
-        );
+    void receiveModifyTrainingMessage_WhenCreateAction_ShouldCallAddTraining() {
+        // Given
+        modifyTrainingRequest.setActionType(ActionType.CREATE);
 
-        TrainingDTO trainingDTO = new TrainingDTO();
-        when(trainingService.deleteTraining(USERNAME, TRAINING_DATE, TRAINING_DURATION))
-                .thenReturn(trainingDTO);
+        when(trainerService.getOrCreate(USERNAME, FIRST_NAME, LAST_NAME, STATUS))
+                .thenReturn(new TrainerDTO());
 
-        // Act
-        messageConsumer.receiveModifyTrainingMessage(request);
+        // When
+        messageConsumer.receiveModifyTrainingMessage(modifyTrainingRequest);
 
-        // Assert
-        verify(trainingService, times(1)).deleteTraining(USERNAME, TRAINING_DATE, TRAINING_DURATION);
+        // Then
+        verify(trainerService).getOrCreate(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
+        verify(trainerService).addTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
     }
 
     @Test
-    void givenInvalidActionType_whenReceiveModifyTrainingMessage_thenThrowException() {
-        // Arrange
-        ModifyTrainingRequest request = new ModifyTrainingRequest(
-                USERNAME,
-                FIRST_NAME,
-                LAST_NAME,
-                ACTIVE,
-                TRAINING_DATE,
-                TRAINING_DURATION,
-                null
-        );
+    void receiveModifyTrainingMessage_WhenDeleteAction_ShouldCallDeleteTraining() {
+        // Given
+        modifyTrainingRequest.setActionType(ActionType.DELETE);
 
-        // Act & Assert
-        assertThrows(EmptyRequiredField.class, () -> messageConsumer.receiveModifyTrainingMessage(request));
+        // When
+        messageConsumer.receiveModifyTrainingMessage(modifyTrainingRequest);
+
+        // Then
+        verify(trainerService).deleteTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
     }
 
     @Test
-    void givenValidRequest_whenReceiveUpdateTrainerMessage_thenUpdateTrainer() {
-        // Arrange
-        UpdateTrainerRequest request = new UpdateTrainerRequest();
-        request.setUsername(USERNAME);
-        request.setFirstName(FIRST_NAME);
-        request.setLastName(LAST_NAME);
-        request.setActive(ACTIVE);
+    void receiveModifyTrainingMessage_WhenActionTypeIsNull_ShouldThrowException() {
+        // Given
+        modifyTrainingRequest.setActionType(null);
 
-        TrainerDTO trainerDTO = new TrainerDTO();
-        when(trainerService.updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, ACTIVE))
-                .thenReturn(trainerDTO);
+        // When/Then
+        assertThrows(EmptyRequiredField.class, () -> messageConsumer.receiveModifyTrainingMessage(modifyTrainingRequest));
+    }
 
-        // Act
-        messageConsumer.receiveUpdateTrainerMessage(request);
+    @Test
+    void receiveUpdateTrainerMessage_ShouldCallUpdateTrainer() {
+        // When
+        messageConsumer.receiveUpdateTrainerMessage(updateTrainerRequest);
 
-        // Assert
-        verify(trainerService, times(1))
-                .updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, ACTIVE);
+        // Then
+        verify(trainerService).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
+    }
+
+    @Test
+    void processModifyTrainingDLQ_ShouldRetryOnFailure() {
+        // Given
+        doThrow(new RuntimeException()).when(trainerService).deleteTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
+
+        // When
+        modifyTrainingRequest.setActionType(ActionType.DELETE);
+        messageConsumer.processModifyTrainingDLQ(modifyTrainingRequest);
+
+        // Then
+        verify(trainerService, times(1)).deleteTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
+    }
+
+    @Test
+    void processUpdateTrainerDLQ_ShouldRetryOnFailure() {
+        // Given
+        doThrow(new RuntimeException()).when(trainerService).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
+
+        // When
+        messageConsumer.processUpdateTrainerDLQ(updateTrainerRequest);
+
+        // Then
+        verify(trainerService, times(1)).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
     }
 }
