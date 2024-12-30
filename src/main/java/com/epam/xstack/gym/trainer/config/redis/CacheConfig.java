@@ -23,7 +23,7 @@ import java.time.Duration;
 
 @Configuration
 @EnableCaching
-@Profile("!test")
+@Profile("!test && !integration-test")
 public class CacheConfig {
 
     @Value("${spring.data.redis.ttl:3}")
