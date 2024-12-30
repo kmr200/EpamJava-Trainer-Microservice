@@ -1,4 +1,4 @@
-package steps;
+package steps.training;
 
 import com.epam.xstack.gym.trainer.dto.TrainingSummary;
 import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
@@ -23,7 +23,7 @@ import java.util.Optional;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@ContextConfiguration(classes = CucumberSpringConfiguration.class)
+@ContextConfiguration(classes = TrainingCucumberConfiguration.class)
 public class ModifyTrainingSteps {
 
     @Autowired

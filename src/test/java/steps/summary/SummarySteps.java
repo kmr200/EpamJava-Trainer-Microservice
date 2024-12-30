@@ -1,4 +1,4 @@
-package steps;
+package steps.summary;
 
 import com.epam.xstack.gym.trainer.dto.TrainingSummary;
 import com.epam.xstack.gym.trainer.jpa.entity.TrainerEntity;
@@ -21,8 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = CucumberSpringConfiguration.class)
-public class ApiSteps {
+@ContextConfiguration(classes = SummaryCucumberConfiguration.class)
+public class SummarySteps {
 
     @Autowired
     private ObjectMapper objectMapper;

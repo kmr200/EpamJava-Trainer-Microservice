@@ -1,4 +1,4 @@
-package steps;
+package steps.summary;
 
 import com.epam.xstack.gym.trainer.TrainerWorkloadServiceApplication;
 import com.epam.xstack.gym.trainer.jpa.repository.TrainerRepository;
@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 )
 @ActiveProfiles("integration-test")
 @EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
-public class CucumberSpringConfiguration {
+public class SummaryCucumberConfiguration {
 
     @MockBean
     private TrainerRepository trainerRepository;
