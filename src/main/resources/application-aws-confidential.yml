@@ -2,7 +2,7 @@ spring:
   cloud:
     aws:
       credentials:
-        secret-key: #test
+        secret-key: #test2
         access-key: #Your access key
       region:
         static: #Your region
