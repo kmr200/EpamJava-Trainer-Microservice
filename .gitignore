@@ -7,6 +7,9 @@ build/
 ### Logs ###
 logs/*
 
+### AWS keys ###
+/src/main/resources/application-aws-confidential.yml
+
 ### IntelliJ IDEA ###
 /.idea/
 *.iws
