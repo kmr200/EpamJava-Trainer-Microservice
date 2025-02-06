@@ -1,0 +1,18 @@
+spring:
+  cache:
+    type: simple
+  application:
+    name: trainer-workload-service
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  cloud:
+    discovery:
+      enabled: false
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    enabled: false

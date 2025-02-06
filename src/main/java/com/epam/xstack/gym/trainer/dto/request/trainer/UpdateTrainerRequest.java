@@ -27,6 +27,7 @@ public class UpdateTrainerRequest implements Request {
             String lastName,
             Boolean isActive
     ) {
+        this.username = username;
         this.firstName = firstName;
         this.isActive = isActive;
         this.lastName = lastName;
