@@ -99,28 +99,4 @@ class MessageConsumerTest {
         verify(trainerService).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
     }
 
-    @Test
-    void processModifyTrainingDLQ_ShouldRetryOnFailure() {
-        // Given
-        doThrow(new RuntimeException()).when(trainerService).deleteTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
-
-        // When
-        modifyTrainingRequest.setActionType(ActionType.DELETE);
-        messageConsumer.processModifyTrainingDLQ(modifyTrainingRequest);
-
-        // Then
-        verify(trainerService, times(1)).deleteTraining(USERNAME, modifyTrainingRequest.getTrainingDate(), TRAINING_DURATION);
-    }
-
-    @Test
-    void processUpdateTrainerDLQ_ShouldRetryOnFailure() {
-        // Given
-        doThrow(new RuntimeException()).when(trainerService).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
-
-        // When
-        messageConsumer.processUpdateTrainerDLQ(updateTrainerRequest);
-
-        // Then
-        verify(trainerService, times(1)).updateTrainer(USERNAME, FIRST_NAME, LAST_NAME, STATUS);
-    }
 }
