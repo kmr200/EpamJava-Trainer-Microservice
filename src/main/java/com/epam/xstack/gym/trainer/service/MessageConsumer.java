@@ -5,10 +5,10 @@ import com.epam.xstack.gym.trainer.dto.request.trainer.UpdateTrainerRequest;
 import com.epam.xstack.gym.trainer.dto.request.training.ActionType;
 import com.epam.xstack.gym.trainer.dto.request.training.ModifyTrainingRequest;
 import com.epam.xstack.gym.trainer.exception.EmptyRequiredField;
+import io.awspring.cloud.sqs.annotation.SqsListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,8 +24,8 @@ public class MessageConsumer {
         this.trainerService = trainerService;
     }
 
+    @SqsListener(value = "modify-training.fifo", factory = "customSqsListenerContainerFactory")
     @Transactional
-    @JmsListener(destination = "modify-training")
     public void receiveModifyTrainingMessage(ModifyTrainingRequest request) {
         logger.debug("Manage training request: {}", request);
         if (request.getActionType() == null) {
@@ -72,7 +72,7 @@ public class MessageConsumer {
         }
     }
 
-    @JmsListener(destination = "update-trainer")
+    @SqsListener(value = "update-trainer.fifo", factory = "customSqsListenerContainerFactory")
     @Transactional
     public void receiveUpdateTrainerMessage(UpdateTrainerRequest request) {
         logger.debug("Update trainer message: {}", request);
@@ -83,29 +83,6 @@ public class MessageConsumer {
                 request.getLastName(),
                 request.getActive()
         );
-    }
-
-    @JmsListener(destination = "DLQ.modify-training")
-    @Transactional
-    public void processModifyTrainingDLQ(ModifyTrainingRequest request) {
-        // Retry once more
-        try {
-            receiveModifyTrainingMessage(request);
-        } catch (Exception e) {
-            //In case of failure log the message
-            logger.error("Modify training request has failed: {}", request);
-        }
-    }
-
-    @JmsListener(destination = "DLQ.update-trainer")
-    @Transactional
-    public void processUpdateTrainerDLQ(UpdateTrainerRequest request) {
-        //Retry once more
-        try {
-            receiveUpdateTrainerMessage(request);
-        } catch (Exception e) {
-            logger.error("Update training request has failed: {}", request);
-        }
     }
 
 }

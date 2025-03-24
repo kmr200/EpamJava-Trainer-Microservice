@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class TrainerService {
